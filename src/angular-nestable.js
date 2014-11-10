@@ -59,6 +59,8 @@
 			var itemProperty = 'item';
 			var childrenProperty = 'children';
 			var collapseAllOnStart = false;
+            var activeItemProperty = null;
+            var collapsedItemProperty = null;
 			var defaultOptions = {};
 
 			this.$get = function(){
@@ -67,6 +69,8 @@
 					itemProperty: itemProperty,
 					childrenProperty: childrenProperty,
 					collapseAllOnStart: collapseAllOnStart,
+                    activeItemProperty: activeItemProperty,
+                    collapsedItemProperty: collapsedItemProperty,
 					defaultOptions: defaultOptions
 				};
 			};
@@ -113,6 +117,15 @@
 			this.collapseAllOnStart = function (value) {
 				collapseAllOnStart = value;
 			};
+
+			this.activeItemProperty = function (value) {
+                activeItemProperty = value;
+			};
+
+			this.collapsedItemProperty = function (value) {
+                collapsedItemProperty = value;
+			};
+
 			/**
 			 * Method to set default nestable options
 			 * @param  {[object]} value
@@ -120,7 +133,7 @@
 
 				maxDepth        : number of levels an item can be nested (default 5)
 				group           : group ID to allow dragging between lists (default 0)
-				
+
 				listNodeName    : The HTML element to create for lists (default 'ol')
 				itemNodeName    : The HTML element to create for list items (default 'li')
 				rootClass       : The class of the root element .nestable() was used on (default 'dd')
@@ -153,7 +166,7 @@
 							$nestable.defaultOptions,
 							$scope.$eval($attrs.ngNestable)
 						);
-						$scope.$watchCollection(function(){
+						$scope.$watch(function(){
 							return $ngModel.$modelValue;
 						}, function(model){
 							if(model){
@@ -177,7 +190,7 @@
 									$scope && $scope.$root && $scope.$root.$$phase || $scope.$apply();
 								});
 							}
-						});
+						}, true);
 					};
 				},
 				controller: angular.noop
@@ -192,6 +205,18 @@
 
 					var listItem = $('<li class="dd-item"></li>');
 					var listElement = $('<div ng-nestable-item class="dd-handle"></div>');
+
+                    if ($nestable.activeItemProperty) {
+                        if (item[$nestable.activeItemProperty] === true) {
+                            listElement.addClass($nestable.defaultOptions.activeItemClass);
+                        }
+                    }
+                    if ($nestable.collapsedItemProperty) {
+                        if (item[$nestable.collapsedItemProperty] === true) {
+                            listItem.addClass($nestable.defaultOptions.collapsedClass);
+                        }
+                    }
+
 					listElement.append(tpl).appendTo(listItem);
 					list.append(listItem);
 					var itemData = $nestable.itemProperty ? item[$nestable.itemProperty] : item;
