@@ -58,6 +58,7 @@
 			var modelName = '$item';
 			var itemProperty = 'item';
 			var childrenProperty = 'children';
+			var childrenFilter = null;
 			var collapseAllOnStart = false;
             var activeItemProperty = null;
             var collapsedItemProperty = null;
@@ -68,6 +69,7 @@
 					modelName: modelName,
 					itemProperty: itemProperty,
 					childrenProperty: childrenProperty,
+					childrenFilter: childrenFilter,
 					collapseAllOnStart: collapseAllOnStart,
                     activeItemProperty: activeItemProperty,
                     collapsedItemProperty: collapsedItemProperty,
@@ -89,6 +91,14 @@
 			 */
 			this.childrenProperty = function(value){
 				childrenProperty = value;
+			};
+
+			/**
+			 * Method to set filter for children elements
+			 * @param  filter - can be one of: string, Object, function(value, index)
+			 */
+			this.childrenFilter = function(filter){
+				childrenFilter = filter;
 			};
 
 			/**
@@ -153,7 +163,7 @@
 				defaultOptions = value;
 			};
 		})
-		.directive('ngNestable', ['$compile', '$nestable', function($compile, $nestable){
+		.directive('ngNestable', ['$compile', '$filter', '$nestable', function($compile, $filter, $nestable){
 			return {
 				restrict: 'A',
 				require: 'ngModel',
@@ -222,6 +232,9 @@
 					var itemData = $nestable.itemProperty ? item[$nestable.itemProperty] : item;
 					listItem.data('item', itemData);
 					var children = item[$nestable.childrenProperty];
+					if ($nestable.childrenFilter) {
+						children = $filter('filter')(children, $nestable.childrenFilter);
+					}
 					if(isArray(children) && children.length > 0){
 						var subRoot = $('<ol class="dd-list"></ol>').appendTo(listItem);
 						children.forEach(function(item){
