@@ -59,9 +59,11 @@
 			var itemProperty = 'item';
 			var childrenProperty = 'children';
 			var childrenFilter = null;
+			var orderBy = null;
+			var orderByReverse = false;
 			var collapseAllOnStart = false;
-            var activeItemProperty = null;
-            var collapsedItemProperty = null;
+			var activeItemProperty = null;
+			var collapsedItemProperty = null;
 			var defaultOptions = {};
 
 			this.$get = function(){
@@ -70,9 +72,11 @@
 					itemProperty: itemProperty,
 					childrenProperty: childrenProperty,
 					childrenFilter: childrenFilter,
+					orderBy: orderBy,
+					orderByReverse: orderByReverse,
 					collapseAllOnStart: collapseAllOnStart,
-                    activeItemProperty: activeItemProperty,
-                    collapsedItemProperty: collapsedItemProperty,
+					activeItemProperty: activeItemProperty,
+					collapsedItemProperty: collapsedItemProperty,
 					defaultOptions: defaultOptions
 				};
 			};
@@ -99,6 +103,16 @@
 			 */
 			this.childrenFilter = function(filter){
 				childrenFilter = filter;
+			};
+
+			/**
+			 * Method to set filter for children elements
+			 * @param  order - can be one of: string, function(value, index)
+			 * @param  {[boolean]} reverse - Reverse the order of the array.
+			 */
+			this.orderBy = function(order, reverse){
+				orderBy = order;
+				orderByReverse = !!reverse;
 			};
 
 			/**
@@ -129,11 +143,11 @@
 			};
 
 			this.activeItemProperty = function (value) {
-                activeItemProperty = value;
+				activeItemProperty = value;
 			};
 
 			this.collapsedItemProperty = function (value) {
-                collapsedItemProperty = value;
+				collapsedItemProperty = value;
 			};
 
 			/**
@@ -209,6 +223,9 @@
 			function buildNestableHtml(model, tpl){
 				var root = $('<div class="dd"></div>');
 				var rootList = $('<ol class="dd-list"></ol>').appendTo(root);
+				if ($nestable.orderBy) {
+					model = $filter('orderBy')(model, $nestable.orderBy, $nestable.orderByReverse);
+				}
 				model.forEach(function f(item){
 					var list = Array.prototype.slice.call(arguments).slice(-1)[0];
 					if(!(list instanceof $)) list = rootList;
@@ -216,16 +233,16 @@
 					var listItem = $('<li class="dd-item"></li>');
 					var listElement = $('<div ng-nestable-item class="dd-handle"></div>');
 
-                    if ($nestable.activeItemProperty) {
-                        if (item[$nestable.activeItemProperty] === true) {
-                            listElement.addClass($nestable.defaultOptions.activeItemClass);
-                        }
-                    }
-                    if ($nestable.collapsedItemProperty) {
-                        if (item[$nestable.collapsedItemProperty] === true) {
-                            listItem.addClass($nestable.defaultOptions.collapsedClass);
-                        }
-                    }
+					if ($nestable.activeItemProperty) {
+							if (item[$nestable.activeItemProperty] === true) {
+									listElement.addClass($nestable.defaultOptions.activeItemClass);
+							}
+					}
+					if ($nestable.collapsedItemProperty) {
+							if (item[$nestable.collapsedItemProperty] === true) {
+									listItem.addClass($nestable.defaultOptions.collapsedClass);
+							}
+					}
 
 					listElement.append(tpl).appendTo(listItem);
 					list.append(listItem);
@@ -234,6 +251,9 @@
 					var children = item[$nestable.childrenProperty];
 					if ($nestable.childrenFilter) {
 						children = $filter('filter')(children, $nestable.childrenFilter);
+					}
+					if ($nestable.orderBy) {
+						children = $filter('orderBy')(children, $nestable.orderBy, $nestable.orderByReverse);
 					}
 					if(isArray(children) && children.length > 0){
 						var subRoot = $('<ol class="dd-list"></ol>').appendTo(listItem);
