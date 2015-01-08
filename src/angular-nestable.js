@@ -190,6 +190,16 @@
 							$nestable.defaultOptions,
 							$scope.$eval($attrs.ngNestable)
 						);
+						options.onExpand = function (item) {
+							if ($nestable.collapsedItemProperty) {
+								item.data('item')[$nestable.collapsedItemProperty] = false;
+							}
+						};
+						options.onCollapse = function (item) {
+							if ($nestable.collapsedItemProperty) {
+								item.data('item')[$nestable.collapsedItemProperty] = true;
+							}
+						};
 						$scope.$watch(function(){
 							return $ngModel.$modelValue;
 						}, function(model){
