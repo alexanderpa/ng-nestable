@@ -200,6 +200,7 @@
 								item.data('item')[$nestable.collapsedItemProperty] = true;
 							}
 						};
+            var root;
 						$scope.$watch(function(){
 							return $ngModel.$modelValue;
 						}, function(model){
@@ -212,7 +213,7 @@
 								 */
 								model = runFormatters(model, $ngModel);
 								// TODO: optimize as rebuilding is not necessary here
-								var root = buildNestableHtml(model, itemTemplate);
+								root = buildNestableHtml(model, itemTemplate);
 								$element.empty().append(root);
 								$compile(root)($scope);
 								root.nestable(options);
@@ -225,7 +226,17 @@
 								});
 							}
 						}, true);
-					};
+            $scope.$on('nestable-expand-all', function ($event) {
+              if (root) {
+                root.nestable('expandAll');
+              }
+            });
+            $scope.$on('nestable-collapse-all', function ($event) {
+              if (root) {
+                root.nestable('collapseAll');
+              }
+            });
+          };
 				},
 				controller: angular.noop
 			};
